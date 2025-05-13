@@ -1,0 +1,82 @@
+﻿@model Ogrenci
+@{
+    ViewData["Title"] = "OgrenciEkle";
+}
+
+<h1>Ogrenci Ekle</h1>
+
+<div class="alert alert-success" id="successAlert" style="display:none;">
+    <span id="successMessage"></span>
+</div>
+<div class="alert alert-danger" id="errorAlert" style="display:none;">
+    <span id="errorMessage"></span>
+</div>
+
+<form id="ogrenciEkleForm">
+    <div class="mb-3">
+        <label class="form-label" for="Ad">Ad</label>
+        <input class="form-control" type="text" id="Ad" name="Ad" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="Soyad">Soyad</label>
+        <input class="form-control" type="text" id="Soyad" name="Soyad" required />
+    </div>
+    <button type="button" id="btnKaydet" class="btn btn-success">Kaydet</button>
+    <a href="/Ogrenci/OgrenciListe" class="btn btn-secondary">Listeye Dön</a>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Kaydet butonuna tıklandığında
+            $("#btnKaydet").click(function () {
+                // Form verileri
+                var formData = {
+                    Ad: $("#Ad").val(),
+                    Soyad: $("#Soyad").val()
+                };
+
+                // Form validasyonu
+                if (!formData.Ad || !formData.Soyad) {
+                    showAlert(false, "Lütfen tüm alanları doldurun.");
+                    return;
+                }
+
+                // AJAX ile öğrenci ekleme
+                $.ajax({
+                    url: '/Ogrenci/AddOgrenci',
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            // Başarılı mesajı göster
+                            showAlert(true, response.message);
+                            // Formu temizle
+                            $("#ogrenciEkleForm")[0].reset();
+                        } else {
+                            // Hata mesajı göster
+                            showAlert(false, response.message);
+                        }
+                    },
+                    error: function (error) {
+                        showAlert(false, "Bir hata oluştu: " + error.statusText);
+                    }
+                });
+            });
+        });
+
+        // Uyarı mesajını göster
+        function showAlert(success, message) {
+            if (success) {
+                $('#successMessage').text(message);
+                $('#successAlert').fadeIn().delay(3000).fadeOut();
+            } else {
+                $('#errorMessage').text(message);
+                $('#errorAlert').fadeIn().delay(3000).fadeOut();
+            }
+        }
+    </script>
+}
+
+
+

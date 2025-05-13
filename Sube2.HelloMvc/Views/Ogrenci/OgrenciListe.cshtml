@@ -1,0 +1,191 @@
+﻿@model IEnumerable<Ogrenci>
+@{
+    Layout = "_Layout";
+}
+
+<h3>Öğrenci Listesi</h3>
+<div class="alert alert-success" id="successAlert" style="display:none;">
+    <span id="successMessage"></span>
+</div>
+<div class="alert alert-danger" id="errorAlert" style="display:none;">
+    <span id="errorMessage"></span>
+</div>
+
+<div class="mb-3">
+    <a href="/Ogrenci/OgrenciEkle" class="btn btn-primary">Yeni Öğrenci</a>
+</div>
+
+<table class="table table-striped" id="ogrenciTable">
+    <thead>
+        <tr>
+            <th>Öğrenci ID</th>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody id="ogrenciData">
+        <!-- AJAX ile doldurulacak -->
+    </tbody>
+</table>
+
+<!-- Öğrenci Detay Modal -->
+<div class="modal fade" id="ogrenciDetayModal" tabindex="-1" aria-labelledby="ogrenciDetayModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ogrenciDetayModalLabel">Öğrenci Detayları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="ogrenciDetayForm">
+                    <input type="hidden" id="ogrenciId" name="Ogrenciid" />
+                    <div class="mb-3">
+                        <label for="ogrenciAd" class="form-label">Ad</label>
+                        <input type="text" class="form-control" id="ogrenciAd" name="Ad" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ogrenciSoyad" class="form-label">Soyad</label>
+                        <input type="text" class="form-control" id="ogrenciSoyad" name="Soyad" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="btnKaydet">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Öğrenci listesini yükle
+            loadOgrenciList();
+
+            // Öğrenci Kaydet butonu için event listener
+            $("#btnKaydet").click(function () {
+                updateOgrenci();
+            });
+        });
+
+        // Tüm öğrencileri yükle
+        function loadOgrenciList() {
+            $.ajax({
+                url: '/Ogrenci/GetOgrenciList',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    let rows = '';
+                    $.each(data, function (i, ogrenci) {
+                        rows += `<tr>
+                                            <td>${ogrenci.ogrenciid}</td>
+                                            <td>${ogrenci.ad}</td>
+                                            <td>${ogrenci.soyad}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info" onclick="showOgrenciDetails(${ogrenci.ogrenciid})">Düzenle</button>
+                                                <button class="btn btn-sm btn-danger" onclick="deleteOgrenci(${ogrenci.ogrenciid})">Sil</button>
+                                            </td>
+                                        </tr>`;
+                    });
+                    $('#ogrenciData').html(rows);
+                },
+                error: function (error) {
+                    showAlert(false, 'Öğrenci listesi yüklenirken bir hata oluştu: ' + error.statusText);
+                }
+            });
+        }
+
+        // Öğrenci detaylarını göster
+        function showOgrenciDetails(id) {
+            $.ajax({
+                url: '/Ogrenci/GetOgrenci',
+                type: 'GET',
+                data: { id: id },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        var ogrenci = response.data;
+                        $('#ogrenciId').val(ogrenci.ogrenciid);
+                        $('#ogrenciAd').val(ogrenci.ad);
+                        $('#ogrenciSoyad').val(ogrenci.soyad);
+
+                        // Modalı aç
+                        var myModal = new bootstrap.Modal(document.getElementById('ogrenciDetayModal'));
+                        myModal.show();
+                    } else {
+                        showAlert(false, response.message);
+                    }
+                },
+                error: function (error) {
+                    showAlert(false, 'Öğrenci detayları yüklenirken bir hata oluştu: ' + error.statusText);
+                }
+            });
+        }
+
+        // Öğrenciyi güncelle
+        function updateOgrenci() {
+            var formData = {
+                Ogrenciid: $('#ogrenciId').val(),
+                Ad: $('#ogrenciAd').val(),
+                Soyad: $('#ogrenciSoyad').val()
+            };
+
+            $.ajax({
+                url: '/Ogrenci/UpdateOgrenci',
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        // Modalı kapat
+                        $('#ogrenciDetayModal').modal('hide');
+                        // Öğrenci listesini yenile
+                        loadOgrenciList();
+                        showAlert(true, response.message);
+                    } else {
+                        showAlert(false, response.message);
+                    }
+                },
+                error: function (error) {
+                    showAlert(false, 'Öğrenci güncellenirken bir hata oluştu: ' + error.statusText);
+                }
+            });
+        }
+
+        // Öğrenciyi sil
+        function deleteOgrenci(id) {
+            if (confirm('Bu öğrenciyi silmek istediğinizden emin misiniz?')) {
+                $.ajax({
+                    url: '/Ogrenci/DeleteOgrenci',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            // Öğrenci listesini yenile
+                            loadOgrenciList();
+                            showAlert(true, response.message);
+                        } else {
+                            showAlert(false, response.message);
+                        }
+                    },
+                    error: function (error) {
+                        showAlert(false, 'Öğrenci silinirken bir hata oluştu: ' + error.statusText);
+                    }
+                });
+            }
+        }
+
+        // Uyarı mesajını göster
+        function showAlert(success, message) {
+            if (success) {
+                $('#successMessage').text(message);
+                $('#successAlert').fadeIn().delay(3000).fadeOut();
+            } else {
+                $('#errorMessage').text(message);
+                $('#errorAlert').fadeIn().delay(3000).fadeOut();
+            }
+        }
+    </script>
+}
+

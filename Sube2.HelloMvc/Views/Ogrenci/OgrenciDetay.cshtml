@@ -1,0 +1,113 @@
+﻿@model Ogrenci
+@{
+    ViewData["Title"] = "OgrenciDetay";
+}
+
+<h1>Ogrenci Detay</h1>
+
+<div class="alert alert-success" id="successAlert" style="display:none;">
+    <span id="successMessage"></span>
+</div>
+<div class="alert alert-danger" id="errorAlert" style="display:none;">
+    <span id="errorMessage"></span>
+</div>
+
+<div id="ogrenciDetayContainer">
+    <form id="ogrenciDetayForm">
+        <input type="hidden" id="ogrenciId" name="Ogrenciid" />
+        <div class="mb-3">
+            <label class="form-label" for="Ad">Ad</label>
+            <input class="form-control" type="text" id="Ad" name="Ad" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="Soyad">Soyad</label>
+            <input class="form-control" type="text" id="Soyad" name="Soyad" required />
+        </div>
+        <button type="button" id="btnGuncelle" class="btn btn-success">Güncelle</button>
+        <a href="/Ogrenci/OgrenciListe" class="btn btn-secondary">Listeye Dön</a>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // URL'den öğrenci ID'sini al
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = window.location.pathname.split('/').pop();
+
+            if (id) {
+                // Öğrenci detaylarını yükle
+                loadOgrenciDetails(id);
+            }
+
+            // Güncelle butonuna tıklandığında
+            $("#btnGuncelle").click(function () {
+                // Form verileri
+                var formData = {
+                    Ogrenciid: $("#ogrenciId").val(),
+                    Ad: $("#Ad").val(),
+                    Soyad: $("#Soyad").val()
+                };
+
+                // Form validasyonu
+                if (!formData.Ad || !formData.Soyad) {
+                    showAlert(false, "Lütfen tüm alanları doldurun.");
+                    return;
+                }
+
+                // AJAX ile öğrenci güncelleme
+                $.ajax({
+                    url: '/Ogrenci/UpdateOgrenci',
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            // Başarılı mesajı göster
+                            showAlert(true, response.message);
+                        } else {
+                            // Hata mesajı göster
+                            showAlert(false, response.message);
+                        }
+                    },
+                    error: function (error) {
+                        showAlert(false, "Bir hata oluştu: " + error.statusText);
+                    }
+                });
+            });
+        });
+
+        // Öğrenci detaylarını yükle
+        function loadOgrenciDetails(id) {
+            $.ajax({
+                url: '/Ogrenci/GetOgrenci',
+                type: 'GET',
+                data: { id: id },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        var ogrenci = response.data;
+                        $('#ogrenciId').val(ogrenci.ogrenciid);
+                        $('#Ad').val(ogrenci.ad);
+                        $('#Soyad').val(ogrenci.soyad);
+                    } else {
+                        showAlert(false, response.message);
+                    }
+                },
+                error: function (error) {
+                    showAlert(false, "Öğrenci detayları yüklenirken bir hata oluştu: " + error.statusText);
+                }
+            });
+        }
+
+        // Uyarı mesajını göster
+        function showAlert(success, message) {
+            if (success) {
+                $('#successMessage').text(message);
+                $('#successAlert').fadeIn().delay(3000).fadeOut();
+            } else {
+                $('#errorMessage').text(message);
+                $('#errorAlert').fadeIn().delay(3000).fadeOut();
+            }
+        }
+    </script>
+}
