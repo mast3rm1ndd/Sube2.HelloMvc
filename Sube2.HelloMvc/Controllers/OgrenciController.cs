@@ -83,7 +83,6 @@ namespace Sube2.HelloMvc.Controllers
             return View();
         }
 
-        // AJAX için API metodu - Öğrenci detaylarını getir
         [HttpGet]
         public JsonResult GetOgrenci(int id)
         {
@@ -95,7 +94,6 @@ namespace Sube2.HelloMvc.Controllers
             return Json(new { success = true, data = ogr });
         }
 
-        // AJAX için API metodu - Öğrenci güncelleme
         [HttpPost]
         public JsonResult UpdateOgrenci(Ogrenci ogr)
         {
@@ -115,7 +113,6 @@ namespace Sube2.HelloMvc.Controllers
             }
         }
 
-        // Standart öğrenci güncelleme metodu (eski)
         [HttpPost]
         public IActionResult OgrenciDetay(Ogrenci ogr)
         {
@@ -124,7 +121,6 @@ namespace Sube2.HelloMvc.Controllers
             return RedirectToAction("OgrenciListe");
         }
 
-        // AJAX için API metodu - Öğrenci silme
         [HttpPost]
         public JsonResult DeleteOgrenci(int id)
         {
@@ -146,7 +142,6 @@ namespace Sube2.HelloMvc.Controllers
             }
         }
 
-        // Standart öğrenci silme metodu (eski)
         public IActionResult OgrenciSil(int id)
         {
             var ogr = _context.Ogrenciler.Find(id);

@@ -124,7 +124,6 @@
             });
         }
 
-        // Öğrenciyi güncelle
         function updateOgrenci() {
             var formData = {
                 Ogrenciid: $('#ogrenciId').val(),
@@ -137,10 +136,8 @@
                 type: 'POST',
                 data: formData,
                 success: function (response) {
-                    if (response.success) {
-                        // Modalı kapat
-                        $('#ogrenciDetayModal').modal('hide');
-                        // Öğrenci listesini yenile
+                    if (response.success) 
+                        $('#ogrenciDetayModal').modal('hide
                         loadOgrenciList();
                         showAlert(true, response.message);
                     } else {
@@ -153,7 +150,6 @@
             });
         }
 
-        // Öğrenciyi sil
         function deleteOgrenci(id) {
             if (confirm('Bu öğrenciyi silmek istediğinizden emin misiniz?')) {
                 $.ajax({

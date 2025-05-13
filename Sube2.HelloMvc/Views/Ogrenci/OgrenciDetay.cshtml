@@ -31,41 +31,33 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // URL'den öğrenci ID'sini al
             const urlParams = new URLSearchParams(window.location.search);
             const id = window.location.pathname.split('/').pop();
 
             if (id) {
-                // Öğrenci detaylarını yükle
                 loadOgrenciDetails(id);
             }
 
-            // Güncelle butonuna tıklandığında
             $("#btnGuncelle").click(function () {
-                // Form verileri
                 var formData = {
                     Ogrenciid: $("#ogrenciId").val(),
                     Ad: $("#Ad").val(),
                     Soyad: $("#Soyad").val()
                 };
 
-                // Form validasyonu
                 if (!formData.Ad || !formData.Soyad) {
                     showAlert(false, "Lütfen tüm alanları doldurun.");
                     return;
                 }
 
-                // AJAX ile öğrenci güncelleme
                 $.ajax({
                     url: '/Ogrenci/UpdateOgrenci',
                     type: 'POST',
                     data: formData,
                     success: function (response) {
                         if (response.success) {
-                            // Başarılı mesajı göster
                             showAlert(true, response.message);
-                        } else {
-                            // Hata mesajı göster
+                        } else 
                             showAlert(false, response.message);
                         }
                     },
@@ -76,7 +68,6 @@
             });
         });
 
-        // Öğrenci detaylarını yükle
         function loadOgrenciDetails(id) {
             $.ajax({
                 url: '/Ogrenci/GetOgrenci',
@@ -99,7 +90,6 @@
             });
         }
 
-        // Uyarı mesajını göster
         function showAlert(success, message) {
             if (success) {
                 $('#successMessage').text(message);
